@@ -93,8 +93,8 @@ namespace Life.Tools
             var backBrush = new SolidBrush(backColor);
             var fontText = new Font(fontName, size);
 
-            graphics?.DrawString(text, fontText, backBrush, x + shadowShift, y + shadowShift);
-            graphics?.DrawString(text, fontText, fontBrush, x, y);
+            graphics.DrawString(text, fontText, backBrush, x + shadowShift, y + shadowShift);
+            graphics.DrawString(text, fontText, fontBrush, x, y);
         }
 
         /// <summary>
@@ -117,7 +117,5 @@ namespace Life.Tools
             if (b < 0) b = 0;
             return Color.FromArgb(r, g, b);
         }
-
-
     }
 }

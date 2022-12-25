@@ -18,7 +18,10 @@ namespace Life
         Graphics frameGraphics;
 
         Bitmap frame;
-        string fps;
+        string fpsText;
+        public const int ANIMATION_FPS = 5;
+        int fps;
+        int fpsCounter; // Счётчик FPS
 
         int width;
         int height;
@@ -31,7 +34,7 @@ namespace Life
         readonly Random rnd = new Random();
         readonly Form form = new Form();
         //readonly BackgroundWorker worker = new BackgroundWorker();
-        Stopwatch sw = new Stopwatch();
+        readonly Stopwatch sw = new Stopwatch();
         public void Initialize()
         {
             form.WindowState = FormWindowState.Maximized;
@@ -96,7 +99,6 @@ namespace Life
                             Cells[i, j] = new Cell(i, j);
                     }
             }
-
         }
 
         public void Clear() { frameGraphics.Clear(Color.Black); }
@@ -105,28 +107,93 @@ namespace Life
         {
             while (!MainScenario.IsStopped)
             {
-                await Task.Run(() => UpdateFrame());
+                await Task.Run(() => DrawFrame());
                 await Task.Run(() => UpdateScreen());
             }
         }
 
-        private void UpdateFrame()
+        /// <summary>
+        /// Рисовать кадр.
+        /// </summary>
+        private void DrawFrame()
         {
             Clear();
-            DrawCells();
-            //Thread.Sleep(100);
+            try
+            {
+                DrawCells();
+            }
+            catch (Exception)
+            {
+                return;
+            }
         }
 
         public void UpdateScreen()
         {
             // Вывести FPS
-            //framePainter.DrawText(fps, 4, 4, 9, Color.Black, Color.Black);            
-            fps = $"FPS: {1000 / (sw.ElapsedMilliseconds + 1)}";
-            sw.Restart();
-            framePainter?.DrawText(fps, 4, 4, 9, Color.White, Color.Black);
+            fpsCounter += 1;
+            framePainter?.DrawText(fpsText, 4, 4, 9, Color.White, Color.Black);
 
             // Отобразить фрейм на экране
             mainGraphics?.DrawImage(frame, 0, 0);
+        }
+
+        public void CalcCellsAnimation()
+        {
+            for (int i = 0; i < Cells?.GetLength(0); i++)
+                for (int j = 0; j < Cells?.GetLength(1); j++)
+                {
+                    Cell cell = Cells[i, j];
+                    cell.CalcAnimation();
+                }
+        }
+
+        public void CalcCellsStage()
+        {
+            CalcNeighbourCount();
+
+            for (int i = 0; i < Cells?.GetLength(0); i++)
+                for (int j = 0; j < Cells?.GetLength(1); j++)
+                {
+                    Cell cell = Cells[i, j];
+                    cell.CalcStage();
+                }
+        }
+
+        /// <summary>
+        /// Подсчитать количество живых соседей для каждой клетки.
+        /// </summary>
+        public void CalcNeighbourCount()
+        {
+            for (int i = 0; i < Cells?.GetLength(0); i++)
+                for (int j = 0; j < Cells?.GetLength(1); j++)
+                {
+                    int neighbourCount = 0;
+                    // Перебрать соседей
+                    for (int ii = i - 1; ii <= i + 1; ii++)
+                        for (int jj = j - 1; jj <= j + 1; jj++)
+                        {
+                            if (ii != i | jj != j) // Не считать себя
+                            {
+                                int x = ii;
+                                int y = jj;
+                                // Телепортироваться через границы массива
+                                if (x < 0) x = Cells.GetLength(0) - 1;
+                                if (y < 0) y = Cells.GetLength(1) - 1;
+                                if (x >= Cells.GetLength(0)) x = 0;
+                                if (y >= Cells.GetLength(1)) y = 0;
+                                if (Cells[x, y].Value > 0) neighbourCount++;
+                            }
+                        }
+                    Cells[i, j].NeighbourCount = neighbourCount;
+                }
+        }
+
+        public void CalcFps()
+        {
+            fps = (int)(fpsCounter * 1000 / (sw.ElapsedMilliseconds + 1));
+            fpsText = $"FPS: {fps}"; //({fpsCounter}/{sw.ElapsedMilliseconds})";
+            sw.Restart(); fpsCounter = 0;
         }
 
         public void DrawCells()
@@ -134,26 +201,43 @@ namespace Life
             for (int i = 0; i < Cells?.GetLength(0); i++)
                 for (int j = 0; j < Cells?.GetLength(1); j++)
                 {
-                    Cell cell;
-                    try
-                    {
-                        cell = Cells[i, j];
-                    }
-                    catch (Exception)
-                    {
-                        return;
-                    }
+                    Cell cell = Cells[i, j];
 
-                    if (!(cell is null) & cell?.Value != 0)
+                    if (!(cell is null) && cell.Value != 0)
                     {
-                        var darkColor = Painter.GetClarifierColor(cell.Color, .2);
-                        Pen pen = new Pen(darkColor, 1);
+                        int cellWithAnimation = cellWith;
+                        int cellHeightAnimation = cellHeight;
+                        int cellShiftXAnimation = 0;
+                        int cellShiftYAnimation = 0;
+                        // Умирающие клетки гаснут (постепенно уменьшаются в размере)
+                        double cellScale = 1;
+                        if (cell.Value < 0 && cell.Value > -Screen.ANIMATION_FPS)
+                        {
+                            cellScale = (double)(ANIMATION_FPS + cell.Value) / ANIMATION_FPS; // Value = -1 to -5
+                            cellWithAnimation = (int)Math.Round(cellWithAnimation * (1 - cellScale));
+                            cellHeightAnimation = (int)Math.Round(cellHeightAnimation * (1 - cellScale));
+                            cellShiftXAnimation = (cellWith - cellWithAnimation) / 2;
+                            cellShiftYAnimation = (cellHeight - cellHeightAnimation) / 2;
+                        }
+
                         SolidBrush brush = new SolidBrush(cell.Color);
                         var x = i * cellWith;
                         var y = j * cellHeight;
-                        Rectangle rect = new Rectangle(x, y, cellWith, cellHeight);
+                        Rectangle rect = new Rectangle(
+                            x + cellShiftXAnimation, y + cellShiftYAnimation,
+                            cellWithAnimation, cellHeightAnimation);
                         framePainter.FillRoundedRectangle(brush, rect, cellWith / 4);
-                        framePainter.DrawRoundedRectangle(pen, rect, cellWith / 4);
+                        if (cell.Value != 0 && cellWith > 2)
+                        { // Рисовать контур, только если ячейка достаточно большая
+                            var darkColor = Painter.GetClarifierColor(cell.Color, .2);
+                            Pen pen = new Pen(darkColor, 1);
+                            framePainter.DrawRoundedRectangle(pen, rect, cellWith / 4);
+                        }
+                        if (cellWith == 16)
+                        {
+                            // Показать количество соседей.
+                            framePainter.DrawText(cell.NeighbourCount.ToString(), x + 2, y - 2, 12, Color.White);
+                        }
                     }
                 }
         }
@@ -191,18 +275,17 @@ namespace Life
         {
             if (cellWith < 64)
             {
-                cellWith *= 2;
-                cellHeight *= 2;
-                CreateCells(cellWith, cellHeight);
+                cellWith += 2;
+                cellHeight += 2;
+                CreateCells(cellWith, cellHeight); // todo: добавить зум а не Resize
             }
         }
-
         public void ZoomDecrease()
         {
             if (cellWith > 2)
             {
-                cellWith /= 2;
-                cellHeight /= 2;
+                cellWith -= 2;
+                cellHeight -= 2;
                 CreateCells(cellWith, cellHeight);
             }
         }

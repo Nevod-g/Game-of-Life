@@ -93,8 +93,12 @@ namespace Life.Tools
             var backBrush = new SolidBrush(backColor);
             var fontText = new Font(fontName, size);
 
-            graphics.DrawString(text, fontText, backBrush, x + shadowShift, y + shadowShift);
-            graphics.DrawString(text, fontText, fontBrush, x, y);
+            try
+            {
+                graphics.DrawString(text, fontText, backBrush, x + shadowShift, y + shadowShift);
+                graphics.DrawString(text, fontText, fontBrush, x, y);
+            }
+            catch (Exception) { return; }
         }
 
         /// <summary>

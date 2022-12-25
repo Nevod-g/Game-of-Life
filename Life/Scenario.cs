@@ -12,7 +12,7 @@ namespace Life
         public bool IsStopped { get; set; }
 
         readonly Random rnd = new Random();
-        public int AnimationInterval = 200;
+        public int AnimationInterval = 100;
         public int animationFrameIndex = 0;
         public readonly Timer AnimationTimer = new Timer() { Enabled = false };
 

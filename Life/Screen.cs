@@ -18,9 +18,11 @@ namespace Life
         Graphics frameGraphics;
 
         Bitmap frame;
-        string fpsText;
+
         public const int ANIMATION_FPS = 5;
+        string fpsText;
         int fps;
+        int animationSpeed;
         int fpsCounter; // Счётчик FPS
 
         int width;
@@ -30,6 +32,12 @@ namespace Life
         int cellsCountHorizontal;
         int cellsCountVertical;
         Cell[,] Cells;
+
+        /// <summary>
+        /// Шаг изменения скорости анимации.
+        /// </summary>
+        public const int ANIMATION_SPEED_STEP = 10;
+        public const int ANIMATION_INTERVAL_MAX = 2000;
 
         readonly Random rnd = new Random();
         readonly Form form = new Form();
@@ -42,10 +50,12 @@ namespace Life
             form.ShowIcon = true;
             form.ControlBox = false;
             form.FormBorderStyle = FormBorderStyle.None;
+            form.Icon = Life.Properties.Resources.gol;
+            form.Text = Application.ProductName;
             form.Show();
 
             mainPainter = new Painter();
-            mainGraphics = new Painter().Initialize(form);
+            mainGraphics = mainPainter.Initialize(form);
             width = form.Width;
             height = form.Height;
 
@@ -122,20 +132,21 @@ namespace Life
             {
                 DrawCells();
             }
-            catch (Exception)
-            {
-                return;
-            }
+            catch (Exception) { return; }
         }
 
         public void UpdateScreen()
         {
-            // Вывести FPS
-            fpsCounter += 1;
-            framePainter?.DrawText(fpsText, 4, 4, 9, Color.White, Color.Black);
+            try
+            {
+                // Вывести FPS
+                fpsCounter += 1;
+                framePainter?.DrawText(fpsText, 4, 4, 9, Color.White, Color.Black);
 
-            // Отобразить фрейм на экране
-            mainGraphics?.DrawImage(frame, 0, 0);
+                // Отобразить фрейм на экране
+                mainGraphics?.DrawImage(frame, 0, 0);
+            }
+            catch (Exception) { return; }
         }
 
         public void CalcCellsAnimation()
@@ -192,7 +203,8 @@ namespace Life
         public void CalcFps()
         {
             fps = (int)(fpsCounter * 1000 / (sw.ElapsedMilliseconds + 1));
-            fpsText = $"FPS: {fps}"; //({fpsCounter}/{sw.ElapsedMilliseconds})";
+            animationSpeed = (ANIMATION_INTERVAL_MAX - MainScenario.AnimationSpeed) / 10;
+            fpsText = $"FPS: {fps} Speed: {animationSpeed}"; //({fpsCounter}/{sw.ElapsedMilliseconds})";
             sw.Restart(); fpsCounter = 0;
         }
 
@@ -292,13 +304,13 @@ namespace Life
 
         public void SpeedIncrease()
         {
-            if (MainScenario.AnimationSpeed > ANIMATION_FPS * 10)
-                MainScenario.AnimationSpeed -= ANIMATION_FPS * 10;
+            if (MainScenario.AnimationSpeed > ANIMATION_SPEED_STEP)
+                MainScenario.AnimationSpeed -= ANIMATION_SPEED_STEP;
         }
         public void SpeedDecrease()
         {
-            if (MainScenario.AnimationSpeed < ANIMATION_FPS * 10 * 400)
-                MainScenario.AnimationSpeed += ANIMATION_FPS * 10;
+            if (MainScenario.AnimationSpeed < ANIMATION_INTERVAL_MAX)
+                MainScenario.AnimationSpeed += ANIMATION_SPEED_STEP;
         }
 
         public void CreateImpostor()

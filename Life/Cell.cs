@@ -13,7 +13,7 @@ namespace Life
         /// <summary>
         /// Максимальный возраст клетки.
         /// </summary>
-        const int AGE_MAX = Screen.ANIMATION_FPS * 10;
+        const int AGE_MAX = Screen.ANIMATION_FPS * Screen.ANIMATION_SPEED_STEP;        
 
         public Cell(int x, int y)
         {
@@ -68,7 +68,7 @@ namespace Life
 
         public void CalcStage()
         {
-            // Фичи
+            // Фича: Самозванцы переживают первую стадию в любом случае.
             if (IsImpostor) { IsImpostor = !IsImpostor; return; }
 
             // Основная логика поведения клеток
@@ -82,7 +82,7 @@ namespace Life
         }
 
         /// <summary>
-        /// Одиночество: меньше двух.
+        /// Одиночество: меньше двух соседей.
         /// </summary>
         public bool IsLoneliness()
         {

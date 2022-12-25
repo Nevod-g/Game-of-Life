@@ -9,9 +9,14 @@ The Game of Life, also known simply as Life, is a cellular automaton devised by 
 <h3 align="left">Control</h3>
 <table>
   <tr>
-    <th>:keyboard:</th>
-    <th>Space</th>
-    <th>Pause/Start life</th>
+    <th></th>
+    <th>Button</th>
+    <th>Action</th>
+  </tr>
+  <tr>
+    <td>:keyboard:</th>
+    <td>Space</th>
+    <td>Pause/Start life</th>
   </tr>
   <tr>
     <td>:keyboard:</td>
@@ -46,6 +51,6 @@ The Game of Life, also known simply as Life, is a cellular automaton devised by 
 </table>
 
 <h3 align="left">Resources</h3>
-<br>🌍 <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank">EN Wiki</a>
+🌍 <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank">EN Wiki</a>
 <br>🌍 <a href="https://ru.wikipedia.org/wiki/%D0%98%D0%B3%D1%80%D0%B0_%C2%AB%D0%96%D0%B8%D0%B7%D0%BD%D1%8C%C2%BB" target="_blank">RU Wiki</a>
 <br>🌍 <a href="https://www.uplabs.com/posts/conway-s-game-of-life-android-icon" target="_blank">Main icon</a>

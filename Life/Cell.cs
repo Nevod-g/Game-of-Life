@@ -8,6 +8,8 @@ namespace Life
     {
         static readonly Color reviveColor = Color.Green;
         static readonly Color killedColor = Color.Red;
+        static readonly Color staticColor = Color.Blue;
+        static readonly Color impostorColor = Color.White;
         /// <summary>
         /// Максимальный возраст клетки.
         /// </summary>
@@ -18,6 +20,7 @@ namespace Life
             X = x;
             Y = y;
         }
+
         public int X { get; set; }
         public int Y { get; set; }
         public int Value { get; set; }
@@ -26,15 +29,28 @@ namespace Life
         {
             get
             {
+                if (IsImpostor) return impostorColor;
+                if (Value == AGE_MAX) return staticColor;
                 if (Value > 0) return reviveColor;
                 else if (Value < 0) return killedColor;
                 throw new Exception("Dead cells do not need to be drawn.");
             }
         }
 
-        public void Revive()
+        /// <summary>
+        /// Самозванец, клетка сгенерированная случайным образом.
+        /// Самозванцы переживают первую стадию в любом случае.
+        /// </summary>
+        public bool IsImpostor;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="isImpostor">Самозванец</param>
+        public void Revive(bool isImpostor = false)
         {
             Value = 1;
+            IsImpostor = isImpostor;
         }
 
         public void Kill()
@@ -52,6 +68,9 @@ namespace Life
 
         public void CalcStage()
         {
+            // Фичи
+            if (IsImpostor) { IsImpostor = !IsImpostor; return; }
+
             // Основная логика поведения клеток
             if (Value > 0 & NeighbourCount > 1 & NeighbourCount < 4) return; // Клетка продолжает жить
             else if (Value <= 0 & NeighbourCount == 3) Revive(); // Клетка оживает

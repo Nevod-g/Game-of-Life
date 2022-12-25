@@ -233,7 +233,7 @@ namespace Life
                             Pen pen = new Pen(darkColor, 1);
                             framePainter.DrawRoundedRectangle(pen, rect, cellWith / 4);
                         }
-                        if (cellWith == 16)
+                        if (cell.Value > 0 & cellWith == 16 & cell.NeighbourCount > 0)
                         {
                             // Показать количество соседей.
                             framePainter.DrawText(cell.NeighbourCount.ToString(), x + 2, y - 2, 12, Color.White);
@@ -288,6 +288,24 @@ namespace Life
                 cellHeight -= 2;
                 CreateCells(cellWith, cellHeight);
             }
+        }
+
+        public void SpeedIncrease()
+        {
+            if (MainScenario.AnimationSpeed > ANIMATION_FPS * 10)
+                MainScenario.AnimationSpeed -= ANIMATION_FPS * 10;
+        }
+        public void SpeedDecrease()
+        {
+            if (MainScenario.AnimationSpeed < ANIMATION_FPS * 10 * 400)
+                MainScenario.AnimationSpeed += ANIMATION_FPS * 10;
+        }
+
+        public void CreateImpostor()
+        {
+            var x = rnd.Next(Cells.GetLength(0) - 1);
+            var y = rnd.Next(Cells.GetLength(1) - 1);
+            Cells[x, y].Revive(true);
         }
     }
 }

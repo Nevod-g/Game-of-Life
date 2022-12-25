@@ -13,10 +13,16 @@ namespace Life
         {
             if (e.KeyCode == Keys.Escape)
                 MainScenario.Stop();
-            else if (e.KeyCode == Keys.Oemplus | e.KeyCode == Keys.Add) // +
+            else if (e.KeyCode == Keys.Oemplus) // +
                 MainScreen.ZoomIncrease();
-            else if (e.KeyValue == 188 | e.KeyValue == 109) // -
+            else if (e.KeyValue == 188) // -
                 MainScreen.ZoomDecrease();
+            else if (e.KeyCode == Keys.Add) // + (Numpad)
+                MainScreen.SpeedIncrease();
+            else if (e.KeyValue == 109) // - (Numpad)
+                MainScreen.SpeedDecrease();
+            else if (e.KeyCode == Keys.Space) // Пауза
+                MainScenario.AnimationTimer.Enabled = !MainScenario.AnimationTimer.Enabled;
         }
 
         public static void MouseDown(object sender, MouseEventArgs e)
